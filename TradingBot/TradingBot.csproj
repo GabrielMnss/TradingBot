@@ -17,6 +17,7 @@
     <ItemGroup>
       <Folder Include="Chart\" />
       <Folder Include="Klines\" />
+      <Folder Include="Weights\" />
     </ItemGroup>
 
 </Project>

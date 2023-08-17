@@ -19,10 +19,10 @@ public class IaDivergence : Strategy
     {
         interval = KlineInterval.FifteenMinutes;
 
-        model = BaseModel.ModelFromJson(File.ReadAllText(@"D:\PycharmProjects\DoubleTops\model.json"));
-        model.LoadWeight(@"D:\PycharmProjects\DoubleTops\Weights\v1.h5");
-        model_bottom = BaseModel.ModelFromJson(File.ReadAllText(@"D:\PycharmProjects\DoubleTops\model_bottom2.json"));
-        model_bottom.LoadWeight(@"D:\PycharmProjects\DoubleTops\Weights\bottom2.h5");
+        model = BaseModel.ModelFromJson(File.ReadAllText(@"TradingBot/Weights/model_top2.json"));
+        model.LoadWeight(@"TradingBot/Weights/top2.h5");
+        model_bottom = BaseModel.ModelFromJson(File.ReadAllText(@"TradingBot/Weights/model_bottom2.json"));
+        model_bottom.LoadWeight(@"TradingBot/Weights/bottom2.h5");
     }
 
 
