@@ -19,10 +19,10 @@ public class IaDivergence : Strategy
     {
         interval = KlineInterval.FifteenMinutes;
 
-        model = BaseModel.ModelFromJson(File.ReadAllText(@"TradingBot/Weights/model_top2.json"));
-        model.LoadWeight(@"TradingBot/Weights/top2.h5");
-        model_bottom = BaseModel.ModelFromJson(File.ReadAllText(@"TradingBot/Weights/model_bottom2.json"));
-        model_bottom.LoadWeight(@"TradingBot/Weights/bottom2.h5");
+        model = BaseModel.ModelFromJson(File.ReadAllText(@"D:\TradingBot\TradingBot\TradingBot\Weights\model_bottom4.json"));
+        model.LoadWeight(@"D:\TradingBot\TradingBot\TradingBot\Weights\top4.h5");
+        model_bottom = BaseModel.ModelFromJson(File.ReadAllText(@"D:\TradingBot\TradingBot\TradingBot\Weights\model_bottom4.json"));
+        model_bottom.LoadWeight(@"D:\TradingBot\TradingBot\TradingBot\Weights\bottom4.h5");
     }
 
 
@@ -33,8 +33,8 @@ public class IaDivergence : Strategy
 
         var volatility = GetVolatility(quotes, 20);
         
-        var rsi = quotes.TakeLast(200).GetRsi().ToList().TakeLast(10).ToArray();
-        var lastQ = quotes.TakeLast(10).ToList();
+        var rsi = quotes.TakeLast(200).GetRsi().ToList().TakeLast(15).ToArray();
+        var lastQ = quotes.TakeLast(15).ToList();
 
         var index = lastQ.FindIndex(w => w.High == lastQ.Max(x => x.High));
 
@@ -43,18 +43,28 @@ public class IaDivergence : Strategy
         var prediction = model.Predict(rescaled, verbose: 0);
 
         var data = prediction.GetData<float>()[0];
-        
+
+        var ema50 = quotes.TakeLast(100).GetEma(50).ToList();
+        var ema200 = quotes.TakeLast(250).GetEma(200).ToList();
        
 
         var limit = 1;
         
-        if (data > 0.75f && rsi[index].Rsi-7 > rsi.Last().Rsi)
+        if (data > 0.9f && rsi[index].Rsi-7 > rsi.Last().Rsi)
         {
             
             var tp = volatility;
             tp = tp > limit ? limit : tp;
-            var sl = tp * 0.8m;
-            backtest.Sell(tp, sl);
+            var sl = tp * 0.6m;
+            
+            var slPrice = quotes.Last().Close * (1 - sl / 100);
+            var lot = 0.01m * backtest.balance * backtest.ACCOUNT_LEVERAGE
+                / (Math.Abs(quotes.Last().Close - slPrice) / backtest.PIP) * 0.01m;
+            decimal precision = 0.001m;
+
+            lot = Math.Floor(lot / precision) * precision;
+            
+            backtest.Sell(tp, sl, lot:lot);
         }
         else
         {
@@ -64,12 +74,20 @@ public class IaDivergence : Strategy
             
             var index_low = lastQ.FindIndex(w => w.Low == lastQ.Min(x => x.Low));
 
-            if (data_bottom > 0.75f && rsi[index_low].Rsi+7 < rsi.Last().Rsi)
+            if (data_bottom > 0.9f && rsi[index_low].Rsi+7 < rsi.Last().Rsi)
             {
                 var tp = volatility;    
                 tp = tp > limit ? limit : tp;
-                var sl = tp * 0.8m;
-                backtest.Buy(tp, sl);
+                var sl = tp * 0.6m;
+                
+                var slPrice = quotes.Last().Close * (1 - sl / 100);
+                var lot = 0.01m * backtest.balance * backtest.ACCOUNT_LEVERAGE
+                    / (Math.Abs(quotes.Last().Close - slPrice) / backtest.PIP) * 0.01m;
+                decimal precision = 0.001m;
+
+                lot = Math.Floor(lot / precision) * precision;
+                
+                backtest.Buy(tp, sl, lot:lot);
             }
         }
     }
@@ -105,7 +123,7 @@ public class IaDivergence : Strategy
 
     NDarray Rescale(List<Quote> quotes)
     {
-        var nDarray = np.array(new float[1, quotes.Count, 4]);
+        var nDarray = np.array(new float[1, quotes.Count, 2]);
 
         float max = 0;
         float min = 100;
@@ -123,8 +141,8 @@ public class IaDivergence : Strategy
                 new float[]
                 {
                     ((float)quotes[i].Open - min) / (max - min),
-                    ((float)quotes[i].High - min) / (max - min),
-                    ((float)quotes[i].Low - min) / (max - min),
+                    //((float)quotes[i].High - min) / (max - min),
+                    //((float)quotes[i].Low - min) / (max - min),
                     ((float)quotes[i].Close - min) / (max - min)
                 }
             );

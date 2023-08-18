@@ -25,8 +25,8 @@ class TradingBotHeart
     {
         if(backtesting)
         {
-            DateTime from = new(2023, 01, 01);
-            DateTime to = new(2023, 07, 01);
+            DateTime from = new(2023, 07, 01);
+            DateTime to = new(2023, 08, 01);
 
             StartBacktest(from, to);
             return;
@@ -98,7 +98,7 @@ class TradingBotHeart
     {
         var winRate = GetWinrate(backtest.historic);
         print($"\n\n Balance : {backtest.balance:0.00}$\n WinRate : {winRate:0.00}%\n"
-              + $" Totals positions : {backtest.historic.Count}\n", ConsoleColor.DarkYellow);
+              + $" Totals positions : {backtest.historic.Count}\n Mini : {backtest.balanceHistoric.Min():0.00}$\n Maxi : {backtest.balanceHistoric.Max():0.00}", ConsoleColor.DarkYellow);
 
     }
 

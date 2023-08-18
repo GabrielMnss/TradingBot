@@ -363,5 +363,4 @@ public class Divergence : Strategy
         return ((max / min) - 1) * 100;
     }
 
-
 }
